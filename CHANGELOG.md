@@ -4,6 +4,8 @@ CHANGELOG
 Release 6.1.1
 -------------------------------------
 - merged Android 12+ fixes from https://github.com/ImperialCrise/UsbSerial
+- merged manually https://github.com/EneVladMihai/UsbSerial/tree/patch-1
+- merged "Added id 067b:23c3 Prolific Technology, Inc. USB-Serial Controller" https://github.com/felHR85/UsbSerial/pull/366
 
 Release 6.1.0
 --------------------------------------

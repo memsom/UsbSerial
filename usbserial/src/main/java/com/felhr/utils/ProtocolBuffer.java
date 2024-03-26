@@ -130,12 +130,14 @@ public class ProtocolBuffer {
             prevIndex = i + separator.length;
         }
 
+        // changes below are from https://github.com/felHR85/UsbSerial/pull/279/files via https://github.com/EneVladMihai/UsbSerial/tree/patch-1
+        // I would have merged directly, but Github doesn't want to see the branch in the UI.
         if(prevIndex < rawBuffer.length
                 && prevIndex > 0){
-            byte[] tempBuffer = Arrays.copyOfRange(rawBuffer, prevIndex, rawBuffer.length);
+            byte[] tempBuffer = Arrays.copyOfRange(rawBuffer, prevIndex, bufferPointer); // was rawBuffer.length
             bufferPointer = 0;
-            System.arraycopy(tempBuffer, 0, rawBuffer, bufferPointer, rawData.length);
-            bufferPointer += rawData.length;
+            System.arraycopy(tempBuffer, 0, rawBuffer, bufferPointer, tempBuffer.length); // was rawData.length
+            bufferPointer += tempBuffer.length;  // was rawData.length
         }
 
     }
