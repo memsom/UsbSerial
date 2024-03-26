@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+Release 6.1.1
+-------------------------------------
+- merged Android 12+ fixes from https://github.com/ImperialCrise/UsbSerial
+
 Release 6.1.0
 --------------------------------------
 - Added 1228800 and 2000000 baud rates to CH34xx driver.
