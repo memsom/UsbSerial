@@ -26,7 +26,7 @@ public class SerialOutputStream extends OutputStream
     }
 
     @Override
-    public void write(byte b[], int off, int len)
+    public void write(byte[] b, int off, int len)
     {
         if(off < 0 ){
             throw new IndexOutOfBoundsException("Offset must be >= 0");

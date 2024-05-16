@@ -1,8 +1,8 @@
 package com.felhr.usbserial;
 
-import com.felhr.utils.HexData;
-
 import android.util.Log;
+
+import com.felhr.utils.HexData;
 
 public class UsbSerialDebugger
 {

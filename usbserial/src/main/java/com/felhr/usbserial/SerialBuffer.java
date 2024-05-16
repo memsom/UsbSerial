@@ -14,8 +14,6 @@ public class SerialBuffer
 
     private final SynchronizedBuffer writeBuffer;
     private byte[] readBufferCompatible; // Read buffer for android < 4.2
-    private boolean debugging = false;
-
     private boolean version;
     private int readBufferSize = DEFAULT_READ_BUFFER_SIZE;
 
@@ -31,14 +29,6 @@ public class SerialBuffer
             readBufferCompatible = new byte[readBufferSize];
         }
         this.version = version;
-    }
-
-    /*
-     * Print debug messages
-     */
-    public void debug(boolean value)
-    {
-        debugging = value;
     }
 
     public void setReadBufferSize(int readBufferSize)
@@ -82,8 +72,6 @@ public class SerialBuffer
             byte[] dst = new byte[readBuffer.position()];
             readBuffer.position(0);
             readBuffer.get(dst, 0, dst.length);
-            if(debugging)
-                UsbSerialDebugger.printReadLogGet(dst, true);
             return dst;
         }
     }
@@ -130,9 +118,6 @@ public class SerialBuffer
         {
             if(src == null || src.length == 0) return;
 
-            if(debugging)
-                UsbSerialDebugger.printLogPut(src, true);
-
             buffer.write(src);
             notify();
         }
@@ -161,9 +146,6 @@ public class SerialBuffer
                     return new byte[0];
                 }
             }
-
-            if(debugging)
-                UsbSerialDebugger.printLogGet(dst, true);
 
             return dst;
         }

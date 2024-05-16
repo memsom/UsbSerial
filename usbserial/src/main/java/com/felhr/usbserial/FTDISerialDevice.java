@@ -1,7 +1,5 @@
 package com.felhr.usbserial;
 
-import java.util.Arrays;
-
 import android.annotation.SuppressLint;
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
@@ -9,13 +7,13 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbRequest;
-import android.os.Build;
 import android.util.Log;
 
 import com.felhr.utils.SafeUsbRequest;
 
-public class FTDISerialDevice extends UsbSerialDevice
-{
+import java.util.Arrays;
+
+public class FTDISerialDevice extends UsbSerialDevice {
     private static final String CLASS_ID = FTDISerialDevice.class.getSimpleName();
 
     private static final int FTDI_SIO_RESET = 0;
@@ -27,8 +25,8 @@ public class FTDISerialDevice extends UsbSerialDevice
     private static final int FTDI_REQTYPE_HOST2DEVICE = 0x40;
 
     /**
-     *  RTS and DTR values obtained from FreeBSD FTDI driver
-     *  https://github.com/freebsd/freebsd/blob/70b396ca9c54a94c3fad73c3ceb0a76dffbde635/sys/dev/usb/serial/uftdi_reg.h
+     * RTS and DTR values obtained from FreeBSD FTDI driver
+     * https://github.com/freebsd/freebsd/blob/70b396ca9c54a94c3fad73c3ceb0a76dffbde635/sys/dev/usb/serial/uftdi_reg.h
      */
     private static final int FTDI_SIO_SET_DTR_MASK = 0x1;
     private static final int FTDI_SIO_SET_DTR_HIGH = (1 | (FTDI_SIO_SET_DTR_MASK << 8));
@@ -38,11 +36,11 @@ public class FTDISerialDevice extends UsbSerialDevice
     private static final int FTDI_SIO_SET_RTS_LOW = (0 | (FTDI_SIO_SET_RTS_MASK << 8));
 
     /**
-     *  BREAK on/off values obtained from linux driver
-     *  https://github.com/torvalds/linux/blob/master/drivers/usb/serial/ftdi_sio.h
+     * BREAK on/off values obtained from linux driver
+     * https://github.com/torvalds/linux/blob/master/drivers/usb/serial/ftdi_sio.h
      */
-    private static final int FTDI_SIO_SET_BREAK_ON = (1<<14);
-    private static final int FTDI_SIO_SET_BREAK_OFF = (0<<14);
+    private static final int FTDI_SIO_SET_BREAK_ON = (1 << 14);
+    private static final int FTDI_SIO_SET_BREAK_OFF = (0 << 14);
 
     public static final int FTDI_BAUDRATE_300 = 0x2710;
     public static final int FTDI_BAUDRATE_600 = 0x1388;
@@ -95,18 +93,16 @@ public class FTDISerialDevice extends UsbSerialDevice
 
     public FTDIUtilities ftdiUtilities;
 
-    private UsbSerialInterface.UsbParityCallback parityCallback;
-    private UsbSerialInterface.UsbFrameCallback frameCallback;
-    private UsbSerialInterface.UsbOverrunCallback overrunCallback;
-    private UsbSerialInterface.UsbBreakCallback breakCallback;
+    private UsbParityCallback parityCallback;
+    private UsbFrameCallback frameCallback;
+    private UsbOverrunCallback overrunCallback;
+    private UsbBreakCallback breakCallback;
 
-    public FTDISerialDevice(UsbDevice device, UsbDeviceConnection connection)
-    {
+    public FTDISerialDevice(UsbDevice device, UsbDeviceConnection connection) {
         this(device, connection, -1);
     }
 
-    public FTDISerialDevice(UsbDevice device, UsbDeviceConnection connection, int iface)
-    {
+    public FTDISerialDevice(UsbDevice device, UsbDeviceConnection connection, int iface) {
         super(device, connection);
         ftdiUtilities = new FTDIUtilities();
         rtsCtsEnabled = false;
@@ -118,12 +114,10 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public boolean open()
-    {
+    public boolean open() {
         boolean ret = openFTDI();
 
-        if(ret)
-        {
+        if (ret) {
             // Initialize UsbRequest
             UsbRequest requestIN = new SafeUsbRequest();
             requestIN.initialize(connection, inEndpoint);
@@ -139,16 +133,14 @@ public class FTDISerialDevice extends UsbSerialDevice
             isOpen = true;
 
             return true;
-        }else
-        {
+        } else {
             isOpen = false;
             return false;
         }
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SET_MODEM_CTRL_DEFAULT3, 0);
         setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SET_MODEM_CTRL_DEFAULT4, 0);
         currentSioSetData = 0x0000;
@@ -159,11 +151,9 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public boolean syncOpen()
-    {
+    public boolean syncOpen() {
         boolean ret = openFTDI();
-        if(ret)
-        {
+        if (ret) {
             setSyncParams(inEndpoint, outEndpoint);
             asyncMode = false;
 
@@ -174,16 +164,14 @@ public class FTDISerialDevice extends UsbSerialDevice
             isOpen = true;
 
             return true;
-        }else
-        {
+        } else {
             isOpen = false;
             return false;
         }
     }
 
     @Override
-    public void syncClose()
-    {
+    public void syncClose() {
         setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SET_MODEM_CTRL_DEFAULT3, 0);
         setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SET_MODEM_CTRL_DEFAULT4, 0);
         currentSioSetData = 0x0000;
@@ -192,22 +180,19 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void setBaudRate(int baudRate)
-    {
+    public void setBaudRate(int baudRate) {
         short[] encodedBaudRate = encodedBaudRate(baudRate);
 
-        if(encodedBaudRate != null) {
+        if (encodedBaudRate != null) {
             setEncodedBaudRate(encodedBaudRate);
-        }else{
+        } else {
             setOldBaudRate(baudRate);
         }
     }
 
     @Override
-    public void setDataBits(int dataBits)
-    {
-        switch(dataBits)
-        {
+    public void setDataBits(int dataBits) {
+        switch (dataBits) {
             case UsbSerialInterface.DATA_BITS_5:
                 currentSioSetData |= 1;
                 currentSioSetData &= ~(1 << 1);
@@ -248,10 +233,8 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void setStopBits(int stopBits)
-    {
-        switch(stopBits)
-        {
+    public void setStopBits(int stopBits) {
+        switch (stopBits) {
             case UsbSerialInterface.STOP_BITS_1:
                 currentSioSetData &= ~(1 << 11);
                 currentSioSetData &= ~(1 << 12);
@@ -280,10 +263,8 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void setParity(int parity)
-    {
-        switch(parity)
-        {
+    public void setParity(int parity) {
+        switch (parity) {
             case UsbSerialInterface.PARITY_NONE:
                 currentSioSetData &= ~(1 << 8);
                 currentSioSetData &= ~(1 << 9);
@@ -325,10 +306,8 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public void setFlowControl(int flowControl)
-    {
-        switch(flowControl)
-        {
+    public void setFlowControl(int flowControl) {
+        switch (flowControl) {
             case UsbSerialInterface.FLOW_CONTROL_OFF:
                 setControlCommand(FTDI_SIO_SET_FLOW_CTRL, FTDI_SET_FLOW_CTRL_DEFAULT, 0);
                 rtsCtsEnabled = false;
@@ -358,120 +337,101 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     /**
-     *  BREAK on/off methods obtained from linux driver
-     *  https://github.com/torvalds/linux/blob/master/drivers/usb/serial/ftdi_sio.c
+     * BREAK on/off methods obtained from linux driver
+     * https://github.com/torvalds/linux/blob/master/drivers/usb/serial/ftdi_sio.c
      */
     @Override
-    public void setBreak(boolean state)
-    {
-        if(state){
+    public void setBreak(boolean state) {
+        if (state) {
             currentSioSetData |= FTDI_SIO_SET_BREAK_ON;
-        }else{
+        } else {
             currentSioSetData &= ~(FTDI_SIO_SET_BREAK_ON);
         }
         setControlCommand(FTDI_SIO_SET_DATA, currentSioSetData, 0);
     }
 
     @Override
-    public void setRTS(boolean state)
-    {
-        if(state)
-        {
+    public void setRTS(boolean state) {
+        if (state) {
             setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SIO_SET_RTS_HIGH, 0);
-        }else
-        {
+        } else {
             setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SIO_SET_RTS_LOW, 0);
         }
     }
 
     @Override
-    public void setDTR(boolean state)
-    {
-        if(state)
-        {
+    public void setDTR(boolean state) {
+        if (state) {
             setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SIO_SET_DTR_HIGH, 0);
-        }else
-        {
+        } else {
             setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SIO_SET_DTR_LOW, 0);
         }
     }
 
     @Override
-    public void getCTS(UsbCTSCallback ctsCallback)
-    {
+    public void getCTS(UsbCTSCallback ctsCallback) {
         this.ctsCallback = ctsCallback;
     }
 
     @Override
-    public void getDSR(UsbDSRCallback dsrCallback)
-    {
+    public void getDSR(UsbDSRCallback dsrCallback) {
         this.dsrCallback = dsrCallback;
     }
 
     @Override
-    public void getBreak(UsbBreakCallback breakCallback)
-    {
+    public void getBreak(UsbBreakCallback breakCallback) {
         this.breakCallback = breakCallback;
     }
 
     @Override
-    public void getFrame(UsbFrameCallback frameCallback)
-    {
+    public void getFrame(UsbFrameCallback frameCallback) {
         this.frameCallback = frameCallback;
     }
 
     @Override
-    public void getOverrun(UsbOverrunCallback overrunCallback)
-    {
+    public void getOverrun(UsbOverrunCallback overrunCallback) {
         this.overrunCallback = overrunCallback;
     }
 
     @Override
-    public void getParity(UsbParityCallback parityCallback)
-    {
+    public void getParity(UsbParityCallback parityCallback) {
         this.parityCallback = parityCallback;
     }
 
-    private boolean openFTDI()
-    {
-        if(connection.claimInterface(mInterface, true))
-        {
+    private boolean openFTDI() {
+        if (connection.claimInterface(mInterface, true)) {
             Log.i(CLASS_ID, "Interface succesfully claimed");
-        }else
-        {
+        } else {
             Log.i(CLASS_ID, "Interface could not be claimed");
             return false;
         }
 
         // Assign endpoints
         int numberEndpoints = mInterface.getEndpointCount();
-        for(int i=0;i<=numberEndpoints-1;i++)
-        {
+        for (int i = 0; i <= numberEndpoints - 1; i++) {
             UsbEndpoint endpoint = mInterface.getEndpoint(i);
-            if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
-                    && endpoint.getDirection() == UsbConstants.USB_DIR_IN)
-            {
+            if (endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK
+                    && endpoint.getDirection() == UsbConstants.USB_DIR_IN) {
                 inEndpoint = endpoint;
-            }else
-            {
+            } else {
                 outEndpoint = endpoint;
             }
         }
 
         // Default Setup
         firstTime = true;
-        if(setControlCommand(FTDI_SIO_RESET, 0x00, 0) < 0)
+        if (setControlCommand(FTDI_SIO_RESET, 0x00, 0) < 0)
             return false;
-        if(setControlCommand(FTDI_SIO_SET_DATA, FTDI_SET_DATA_DEFAULT, 0) < 0)
+        if (setControlCommand(FTDI_SIO_SET_DATA, FTDI_SET_DATA_DEFAULT, 0) < 0)
             return false;
         currentSioSetData = FTDI_SET_DATA_DEFAULT;
-        if(setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SET_MODEM_CTRL_DEFAULT1, 0) < 0)
+        if (setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SET_MODEM_CTRL_DEFAULT1, 0) < 0)
             return false;
-        if(setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SET_MODEM_CTRL_DEFAULT2, 0) < 0)
+        if (setControlCommand(FTDI_SIO_MODEM_CTRL, FTDI_SET_MODEM_CTRL_DEFAULT2, 0) < 0)
             return false;
-        if(setControlCommand(FTDI_SIO_SET_FLOW_CTRL, FTDI_SET_FLOW_CTRL_DEFAULT, 0) < 0)
+        if (setControlCommand(FTDI_SIO_SET_FLOW_CTRL, FTDI_SET_FLOW_CTRL_DEFAULT, 0) < 0)
             return false;
-        if(setControlCommand(FTDI_SIO_SET_BAUD_RATE, FTDI_BAUDRATE_9600, 0) < 0)
+        if (setControlCommand(FTDI_SIO_SET_BAUD_RATE, FTDI_BAUDRATE_9600, 0) < 0)
             return false;
 
         // Flow control disabled by default
@@ -481,151 +441,131 @@ public class FTDISerialDevice extends UsbSerialDevice
         return true;
     }
 
-    private int setControlCommand(int request, int value, int index)
-    {
+    private int setControlCommand(int request, int value, int index) {
         int dataLength = 0;
         int response = connection.controlTransfer(FTDI_REQTYPE_HOST2DEVICE, request, value, mInterface.getId() + 1 + index, null, dataLength, USB_TIMEOUT);
-        Log.i(CLASS_ID,"Control Transfer Response: " + String.valueOf(response));
+        Log.i(CLASS_ID, "Control Transfer Response: " + String.valueOf(response));
         return response;
     }
 
     // Special treatment needed to FTDI devices
-    static byte[] adaptArray(byte[] ftdiData)
-    {
+    static byte[] adaptArray(byte[] ftdiData) {
         int length = ftdiData.length;
-        if(length > 64)
-        {
+        if (length > 64) {
             int n = 1;
             int p = 64;
             // Precalculate length without FTDI headers
-            while(p < length)
-            {
+            while (p < length) {
                 n++;
-                p = n*64;
+                p = n * 64;
             }
-            int realLength = length - n*2;
+            int realLength = length - n * 2;
             byte[] data = new byte[realLength];
             copyData(ftdiData, data);
             return data;
-        }
-        else if (length == 2) // special case optimization that returns the same instance.
+        } else if (length == 2) // special case optimization that returns the same instance.
         {
             return EMPTY_BYTE_ARRAY;
-        }
-        else
-        {
+        } else {
             return Arrays.copyOfRange(ftdiData, 2, length);
         }
     }
 
     // Copy data without FTDI headers
-    private static void copyData(byte[] src, byte[] dst)
-    {
+    private static void copyData(byte[] src, byte[] dst) {
         int srcPos = 2, dstPos = 0;
-        while(srcPos - 2 <= src.length - 64)
-        {
+        while (srcPos - 2 <= src.length - 64) {
             System.arraycopy(src, srcPos, dst, dstPos, 62);
             srcPos += 64;
             dstPos += 62;
         }
         int remaining = src.length - srcPos + 2;
-        if (remaining > 0)
-        {
+        if (remaining > 0) {
             System.arraycopy(src, srcPos, dst, dstPos, remaining - 2);
         }
     }
 
-    public class FTDIUtilities
-    {
+    public class FTDIUtilities {
         // Special treatment needed to FTDI devices
-        public byte[] adaptArray(byte[] ftdiData)
-        {
+        public byte[] adaptArray(byte[] ftdiData) {
             int length = ftdiData.length;
-            if(length > 64)
-            {
+            if (length > 64) {
                 int n = 1;
                 int p = 64;
                 // Precalculate length without FTDI headers
-                while(p < length)
-                {
+                while (p < length) {
                     n++;
-                    p = n*64;
+                    p = n * 64;
                 }
-                int realLength = length - n*2;
+                int realLength = length - n * 2;
                 byte[] data = new byte[realLength];
                 copyData(ftdiData, data);
                 return data;
-            }else
-            {
+            } else {
                 return Arrays.copyOfRange(ftdiData, 2, length);
             }
         }
 
-        public void checkModemStatus(byte[] data)
-        {
-            if(data.length == 0) // Safeguard for zero length arrays
+        public void checkModemStatus(byte[] data) {
+            if (data.length == 0) // Safeguard for zero length arrays
                 return;
 
             boolean cts = (data[0] & 0x10) == 0x10;
             boolean dsr = (data[0] & 0x20) == 0x20;
 
-            if(firstTime) // First modem status received
+            if (firstTime) // First modem status received
             {
                 ctsState = cts;
                 dsrState = dsr;
 
-                if(rtsCtsEnabled && ctsCallback != null)
+                if (rtsCtsEnabled && ctsCallback != null)
                     ctsCallback.onCTSChanged(ctsState);
 
-                if(dtrDsrEnabled && dsrCallback != null)
+                if (dtrDsrEnabled && dsrCallback != null)
                     dsrCallback.onDSRChanged(dsrState);
 
                 firstTime = false;
                 return;
             }
 
-            if(rtsCtsEnabled &&
+            if (rtsCtsEnabled &&
                     cts != ctsState && ctsCallback != null) //CTS
             {
                 ctsState = !ctsState;
                 ctsCallback.onCTSChanged(ctsState);
             }
 
-            if(dtrDsrEnabled &&
+            if (dtrDsrEnabled &&
                     dsr != dsrState && dsrCallback != null) //DSR
             {
                 dsrState = !dsrState;
                 dsrCallback.onDSRChanged(dsrState);
             }
 
-            if(parityCallback != null) // Parity error checking
+            if (parityCallback != null) // Parity error checking
             {
-                if((data[1] & 0x04) == 0x04)
-                {
+                if ((data[1] & 0x04) == 0x04) {
                     parityCallback.onParityError();
                 }
             }
 
-            if(frameCallback != null) // Frame error checking
+            if (frameCallback != null) // Frame error checking
             {
-                if((data[1] & 0x08) == 0x08)
-                {
+                if ((data[1] & 0x08) == 0x08) {
                     frameCallback.onFramingError();
                 }
             }
 
-            if(overrunCallback != null) // Overrun error checking
+            if (overrunCallback != null) // Overrun error checking
             {
-                if((data[1] & 0x02) == 0x02)
-                {
+                if ((data[1] & 0x02) == 0x02) {
                     overrunCallback.onOverrunError();
                 }
             }
 
-            if(breakCallback != null) // Break interrupt checking
+            if (breakCallback != null) // Break interrupt checking
             {
-                if((data[1] & 0x10) == 0x10)
-                {
+                if ((data[1] & 0x10) == 0x10) {
                     breakCallback.onBreakInterrupt();
                 }
             }
@@ -633,24 +573,20 @@ public class FTDISerialDevice extends UsbSerialDevice
     }
 
     @Override
-    public int syncRead(byte[] buffer, int timeout)
-    {
+    public int syncRead(byte[] buffer, int timeout) {
         long beginTime = System.currentTimeMillis();
         long stopTime = beginTime + timeout;
 
-        if(asyncMode)
-        {
+        if (asyncMode) {
             return -1;
         }
 
-        if(buffer == null)
-        {
+        if (buffer == null) {
             return 0;
         }
 
         int n = buffer.length / 62;
-        if(buffer.length % 62 != 0)
-        {
+        if (buffer.length % 62 != 0) {
             n++;
         }
 
@@ -658,33 +594,29 @@ public class FTDISerialDevice extends UsbSerialDevice
 
         int readen = 0;
 
-        do
-        {
+        do {
             int timeLeft = 0;
-            if(timeout > 0)
-            {
+            if (timeout > 0) {
                 timeLeft = (int) (stopTime - System.currentTimeMillis());
-                if (timeLeft <= 0)
-                {
+                if (timeLeft <= 0) {
                     break;
                 }
             }
 
             int numberBytes = connection.bulkTransfer(inEndpoint, tempBuffer, tempBuffer.length, timeLeft);
 
-            if(numberBytes > 2) // Data received
+            if (numberBytes > 2) // Data received
             {
                 byte[] newBuffer = this.ftdiUtilities.adaptArray(tempBuffer);
                 System.arraycopy(newBuffer, 0, buffer, 0, buffer.length);
 
                 int p = numberBytes / 64;
-                if(numberBytes % 64 != 0)
-                {
+                if (numberBytes % 64 != 0) {
                     p++;
                 }
                 readen = numberBytes - p * 2;
             }
-        }while(readen <= 0);
+        } while (readen <= 0);
 
         return readen;
     }
@@ -695,19 +627,16 @@ public class FTDISerialDevice extends UsbSerialDevice
         long beginTime = System.currentTimeMillis();
         long stopTime = beginTime + timeout;
 
-        if(asyncMode)
-        {
+        if (asyncMode) {
             return -1;
         }
 
-        if(buffer == null)
-        {
+        if (buffer == null) {
             return 0;
         }
 
         int n = length / 62;
-        if(length % 62 != 0)
-        {
+        if (length % 62 != 0) {
             n++;
         }
 
@@ -715,33 +644,29 @@ public class FTDISerialDevice extends UsbSerialDevice
 
         int readen = 0;
 
-        do
-        {
+        do {
             int timeLeft = 0;
-            if(timeout > 0)
-            {
+            if (timeout > 0) {
                 timeLeft = (int) (stopTime - System.currentTimeMillis());
-                if (timeLeft <= 0)
-                {
+                if (timeLeft <= 0) {
                     break;
                 }
             }
 
             int numberBytes = connection.bulkTransfer(inEndpoint, tempBuffer, tempBuffer.length, timeLeft);
 
-            if(numberBytes > 2) // Data received
+            if (numberBytes > 2) // Data received
             {
                 byte[] newBuffer = this.ftdiUtilities.adaptArray(tempBuffer);
                 System.arraycopy(newBuffer, 0, buffer, offset, length);
 
                 int p = numberBytes / 64;
-                if(numberBytes % 64 != 0)
-                {
+                if (numberBytes % 64 != 0) {
                     p++;
                 }
                 readen = numberBytes - p * 2;
             }
-        }while(readen <= 0);
+        } while (readen <= 0);
 
         return readen;
     }
@@ -757,14 +682,11 @@ public class FTDISerialDevice extends UsbSerialDevice
     @SuppressLint("NewApi")
     private int readSyncJelly(byte[] buffer, int timeout, long stopTime) {
         int read = 0;
-        do
-        {
+        do {
             int timeLeft = 0;
-            if(timeout > 0)
-            {
+            if (timeout > 0) {
                 timeLeft = (int) (stopTime - System.currentTimeMillis());
-                if (timeLeft <= 0)
-                {
+                if (timeLeft <= 0) {
                     break;
                 }
             }
@@ -772,33 +694,25 @@ public class FTDISerialDevice extends UsbSerialDevice
 
             int numberBytes = connection.bulkTransfer(inEndpoint, skip, skip.length, timeLeft);
 
-            if(numberBytes > 2) // Data received
+            if (numberBytes > 2) // Data received
             {
                 numberBytes = connection.bulkTransfer(inEndpoint, buffer, read, 62, timeLeft);
                 read += numberBytes;
             }
-        } while(read <= 0);
+        } while (read <= 0);
 
         return read;
     }
 
     // https://stackoverflow.com/questions/47303802/how-is-androids-string-usbdevice-getversion-encoded-from-word-bcddevice
     private short getBcdDevice() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            byte[] descriptors = connection.getRawDescriptors();
-            return (short) ((descriptors[13] << 8) + descriptors[12]);
-        }else{
-            return -1;
-        }
+        byte[] descriptors = connection.getRawDescriptors();
+        return (short) ((descriptors[13] << 8) + descriptors[12]);
     }
 
-    private byte getISerialNumber(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            byte[] descriptors = connection.getRawDescriptors();
-            return descriptors[16];
-        }else{
-            return -1;
-        }
+    private byte getISerialNumber() {
+        byte[] descriptors = connection.getRawDescriptors();
+        return descriptors[16];
     }
 
     private boolean isBaudTolerated(long speed, long target) {
@@ -808,7 +722,7 @@ public class FTDISerialDevice extends UsbSerialDevice
 
     // Encoding baudrate as freebsd driver:
     // https://github.com/freebsd/freebsd/blob/1d6e4247415d264485ee94b59fdbc12e0c566fd0/sys/dev/usb/serial/uftdi.c
-    private short[] encodedBaudRate(int baudRate){
+    private short[] encodedBaudRate(int baudRate) {
         boolean isFT232A = false;
         boolean clk12MHz = false;
         boolean hIndex = false;
@@ -821,53 +735,53 @@ public class FTDISerialDevice extends UsbSerialDevice
         };
 
         byte[] roundoff232a = new byte[]{
-                0,  1,  0,  1,  0, -1,  2,  1,
-                0, -1, -2, -3,  4,  3,  2,  1,
+                0, 1, 0, 1, 0, -1, 2, 1,
+                0, -1, -2, -3, 4, 3, 2, 1,
         };
 
         short bcdDevice = getBcdDevice();
 
-        if(bcdDevice == -1) {
+        if (bcdDevice == -1) {
             return null;
         }
 
-        if(bcdDevice == 0x200 && getISerialNumber() == 0) {
+        if (bcdDevice == 0x200 && getISerialNumber() == 0) {
             isFT232A = true;
         }
 
-        if(bcdDevice == 0x500 || bcdDevice == 0x700 || bcdDevice == 0x800 || bcdDevice == 0x900 || bcdDevice == 0x1000) {
+        if (bcdDevice == 0x500 || bcdDevice == 0x700 || bcdDevice == 0x800 || bcdDevice == 0x900 || bcdDevice == 0x1000) {
             hIndex = true;
         }
 
-        if(bcdDevice == 0x700 || bcdDevice == 0x800 || bcdDevice == 0x900 ) {
+        if (bcdDevice == 0x700 || bcdDevice == 0x800 || bcdDevice == 0x900) {
             clk12MHz = true;
         }
 
-        if(baudRate >= 1200 && clk12MHz) {
+        if (baudRate >= 1200 && clk12MHz) {
             clk = 12000000;
             fastClk = (1 << 17);
-        }else {
+        } else {
             clk = 3000000;
             fastClk = 0;
         }
 
-        if(baudRate < (clk >> 14) || baudRate > clk) {
+        if (baudRate < (clk >> 14) || baudRate > clk) {
             return null;
         }
 
         divisor = (clk << 4) / baudRate;
-        if((divisor & 0xf) == 1) {
+        if ((divisor & 0xf) == 1) {
             divisor &= 0xfffffff8;
-        }else if (isFT232A) {
+        } else if (isFT232A) {
             divisor += roundoff232a[divisor & 0x0f];
-        }else {
+        } else {
             divisor += 1;  /* Rounds odd 16ths up to next 8th. */
         }
         divisor >>= 1;
 
         hwSpeed = (clk << 3) / divisor;
 
-        if(!isBaudTolerated(hwSpeed, baudRate)) {
+        if (!isBaudTolerated(hwSpeed, baudRate)) {
             return null;
         }
 
@@ -876,7 +790,7 @@ public class FTDISerialDevice extends UsbSerialDevice
         if (divisor == 1) {
             if (frac == 0) {
                 divisor = 0;  /* 1.0 becomes 0.0 */
-            }else {
+            } else {
                 frac = 0;     /* 1.5 becomes 1.0 */
             }
         }
@@ -897,33 +811,33 @@ public class FTDISerialDevice extends UsbSerialDevice
 
     private void setOldBaudRate(int baudRate) {
         int value = 0;
-        if(baudRate >= 0 && baudRate <= 300 )
+        if (baudRate >= 0 && baudRate <= 300)
             value = FTDI_BAUDRATE_300;
-        else if(baudRate > 300 && baudRate <= 600)
+        else if (baudRate > 300 && baudRate <= 600)
             value = FTDI_BAUDRATE_600;
-        else if(baudRate > 600 && baudRate <= 1200)
+        else if (baudRate > 600 && baudRate <= 1200)
             value = FTDI_BAUDRATE_1200;
-        else if(baudRate > 1200 && baudRate <= 2400)
+        else if (baudRate > 1200 && baudRate <= 2400)
             value = FTDI_BAUDRATE_2400;
-        else if(baudRate > 2400 && baudRate <= 4800)
+        else if (baudRate > 2400 && baudRate <= 4800)
             value = FTDI_BAUDRATE_4800;
-        else if(baudRate > 4800 && baudRate <= 9600)
+        else if (baudRate > 4800 && baudRate <= 9600)
             value = FTDI_BAUDRATE_9600;
-        else if(baudRate > 9600 && baudRate <=19200)
+        else if (baudRate > 9600 && baudRate <= 19200)
             value = FTDI_BAUDRATE_19200;
-        else if(baudRate > 19200 && baudRate <= 38400)
+        else if (baudRate > 19200 && baudRate <= 38400)
             value = FTDI_BAUDRATE_38400;
-        else if(baudRate > 19200 && baudRate <= 57600)
+        else if (baudRate > 19200 && baudRate <= 57600)
             value = FTDI_BAUDRATE_57600;
-        else if(baudRate > 57600 && baudRate <= 115200)
+        else if (baudRate > 57600 && baudRate <= 115200)
             value = FTDI_BAUDRATE_115200;
-        else if(baudRate > 115200 && baudRate <= 230400)
+        else if (baudRate > 115200 && baudRate <= 230400)
             value = FTDI_BAUDRATE_230400;
-        else if(baudRate > 230400 && baudRate <= 460800)
+        else if (baudRate > 230400 && baudRate <= 460800)
             value = FTDI_BAUDRATE_460800;
-        else if(baudRate > 460800 && baudRate <= 921600)
+        else if (baudRate > 460800 && baudRate <= 921600)
             value = FTDI_BAUDRATE_921600;
-        else if(baudRate > 921600)
+        else if (baudRate > 921600)
             value = FTDI_BAUDRATE_921600;
         else
             value = FTDI_BAUDRATE_9600;

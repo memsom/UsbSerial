@@ -1,6 +1,5 @@
 package com.felhr.usbserial;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 public class SerialInputStream extends InputStream
@@ -55,7 +54,7 @@ public class SerialInputStream extends InputStream
     }
 
     @Override
-    public int read(byte b[], int off, int len)
+    public int read(byte[] b, int off, int len)
     {
         if(off < 0 ){
             throw new IndexOutOfBoundsException("Offset must be >= 0");
@@ -77,7 +76,7 @@ public class SerialInputStream extends InputStream
     }
 
     @Override
-    public int available() throws IOException {
+    public int available() {
         if(bufferSize > 0)
             return bufferSize - pointer;
         else

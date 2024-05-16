@@ -1,6 +1,6 @@
 package com.felhr.usbserial;
 
-abstract class AbstractWorkerThread extends Thread {
+public abstract class AbstractWorkerThread extends Thread {
     boolean firstTime = true;
     private volatile boolean keep = true;
     private volatile Thread workingThread;

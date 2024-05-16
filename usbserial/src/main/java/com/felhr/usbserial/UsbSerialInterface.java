@@ -63,41 +63,5 @@ public interface UsbSerialInterface
     void getOverrun(UsbOverrunCallback overrunCallback);
     void getParity(UsbParityCallback parityCallback);
 
-    interface UsbCTSCallback
-    {
-        void onCTSChanged(boolean state);
-    }
-
-    interface UsbDSRCallback
-    {
-        void onDSRChanged(boolean state);
-    }
-
-    // Error signals callbacks
-    interface UsbBreakCallback
-    {
-        void onBreakInterrupt();
-    }
-
-    interface UsbFrameCallback
-    {
-        void onFramingError();
-    }
-
-    interface  UsbOverrunCallback
-    {
-        void onOverrunError();
-    }
-
-    interface UsbParityCallback
-    {
-        void onParityError();
-    }
-
-    // Usb Read Callback
-    interface UsbReadCallback
-    {
-        void onReceivedData(byte[] data);
-    }
-
 }
+
